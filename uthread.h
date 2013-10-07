@@ -12,6 +12,7 @@
 #include <sys/mman.h>
 #include <ucontext.h>
 #include "typedefs.h"
+#include "listas.h"
 #include "tid.h"
 
 int uth_init();

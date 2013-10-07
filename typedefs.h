@@ -13,12 +13,22 @@
 #define OK 0				//Ok return of the functions
 #define ERROR -1			//Flag of error
 
+
+
 /*TYPES*/
+typedef enum
+{
+	st_READY,
+	st_RUNNING,
+	st_BLOCKED
+} State;
+
 typedef struct st_TCB TCB;
 struct st_TCB
 {
 	int tid;
 	ucontext_t* context;
+	State state;
 	TCB *waiting_for_me;
 };
 

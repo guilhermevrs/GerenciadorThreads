@@ -1,8 +1,15 @@
 #include "uthread.h"
 
+void func1()
+{
+	printf("Thread 1\n");
+}
+
 int main()
 {
 	uth_init();
-	uth_create(foo, NULL);
+	uth_create(func1,NULL);
+	uth_yield();
+	printf("Thread criadora");
 	return 0;
 }

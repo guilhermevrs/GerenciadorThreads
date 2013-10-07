@@ -3,23 +3,30 @@
 /*GLOBALS*/
 
 ucontext_t* contexto_hub;
-
-/*TEMP*/
-TCB* temp_tcb;
-void foo()
-{
-	printf("\nomg essa é a func da thread\n");
-}
+ItemList* READY;
+TCB* EXEC;
+ItemList* BLOCKED;
 
 
 /*PRIVATE*/
+void change_exec()
+{
+	EXEC = removeFirstList(&READY);
+	if(EXEC != NULL)
+	{
+		EXEC->state = st_RUNNING;
+		setcontext(EXEC->context);
+	}
+}
 /*
 	Hub function, where all the threads go after they finish
 */
 void hub_function()
 {
 	printf("\nHub function\n");
-	free(temp_tcb);
+	//QUANDO TIVER WAIT, PRECISA DESBLOQUEAR THREAD QUE ESTA ESPERANDO
+	free(EXEC);
+	change_exec();
 }
 
 /* Initialize the context hub, which is the next step after each thread
@@ -46,6 +53,7 @@ TCB* create_tcb(ucontext_t* context)
 	{
 		newThread->tid = get_tid();
 		newThread->context = context;
+		newThread->state = st_READY;
 		newThread->waiting_for_me = NULL;
 		increment_tid();
 	}
@@ -56,22 +64,20 @@ TCB* create_tcb(ucontext_t* context)
 
 int uth_init()
 {
-	set_tid(0);
-	ucontext_t* p1 = context_hub_init();
+	ucontext_t* main_Context = (ucontext_t*)malloc(sizeof(ucontext_t));
 
-/*Just for testing*/
-	ucontext_t* p2 = contexto_hub;
-	printf("p1 == p2? %d\n", p1 == p2);
-	printf("%d should be 0 \n", get_tid());
-	set_tid(3);
-	printf("%d should be 3 \n",get_tid());
-	printf("%d should be 4 \n",increment_tid());
-	printf("%d should be 3 \n",decrement_tid());
 	set_tid(0);
-	uth_create(foo, NULL);
-	printf("%d is the next tid and should be 1", get_tid());
-	setcontext(temp_tcb->context);
-/*Just for testing end*/
+
+	context_hub_init();
+
+	EXEC = NULL;
+	READY = createList();
+	BLOCKED = createList();
+
+	getcontext(main_Context);
+	
+	EXEC = create_tcb(main_Context);
+	EXEC->state = st_RUNNING;
 
 	return OK;
 }
@@ -79,10 +85,10 @@ int uth_init()
 int uth_create(void * (*start_routine)(void*), void * arg)
 {
 	int varSaida = OK;
+	TCB* newThread;
 	//Aloca contexto
 	ucontext_t* thread_context = (ucontext_t*)malloc(sizeof(ucontext_t));
 	
-
 	if(thread_context == NULL)
 	{
 		varSaida = ERROR; //Não conseguiu alocar contexto para a thread;
@@ -96,27 +102,33 @@ int uth_create(void * (*start_routine)(void*), void * arg)
 		thread_context->uc_link = contexto_hub;
 		makecontext(thread_context, (void (*)(void))start_routine, 1, arg);
 
-		temp_tcb = create_tcb(thread_context);
-		if(temp_tcb == NULL)
+		newThread = create_tcb(thread_context);
+		if(newThread == NULL)
 		{
 			varSaida = ERROR; //Não conseguiu alocar espaço para o TCB
 		}
 		else
 		{
-			varSaida = temp_tcb->tid;
+			varSaida = newThread->tid;
 		}
 	}
 	if(varSaida == ERROR)
 	{
 		//Desaloca tudo, porque deu erro
 		free(thread_context);
-		free(temp_tcb);
+		free(newThread);
 	}
 	return varSaida;
 }
 
 int uth_yield(void)
 {
+	insertList(&READY,EXEC);
+	EXEC->state = st_READY;
+	getcontext(EXEC->context);
+	if(EXEC->state == st_RUNNING)
+		return OK;
+	change_exec();
 	return OK;
 }
 
