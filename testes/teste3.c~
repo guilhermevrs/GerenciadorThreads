@@ -1,19 +1,18 @@
 #include "../include/uthread.h"
 
 /*
-	Criação de thread simples
+	Passagem de parametro
 */
 
-void func1()
+void func1(int paramThread)
 {
-	printf("Thread 1\n");
-	return;
+	printf("Numero recebido: %d\n",paramThread);
 }
 
 int main()
 {
 	uth_init();
-	int a = uth_create(func1,NULL);
+	int a = uth_create(func1,400);
 	printf("Create retornou %d \n",a);
 	uth_yield();
 	printf("Thread criadora\n");

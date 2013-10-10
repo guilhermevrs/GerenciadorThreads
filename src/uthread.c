@@ -15,7 +15,6 @@ void change_exec()
 	EXEC = removeFirstList(&READY);
 	if(EXEC != NULL)
 	{
-		printf("\nExecutar %d\n", EXEC->tid);
 		EXEC->state = st_RUNNING;
 		setcontext(EXEC->context);
 	}
@@ -25,8 +24,6 @@ void change_exec()
 */
 void hub_function()
 {
-	printf("\nHub function\n");
-	showList(READY);
 	if(EXEC->waiting_for_me != NULL)
 	{
 		EXEC->waiting_for_me->state = st_READY;
@@ -79,9 +76,8 @@ int uth_init()
 	ucontext_t* main_Context = (ucontext_t*)malloc(sizeof(ucontext_t));
 
 	set_tid(0);
-	if (context_hub_init == NULL)
+	if (context_hub_init() == NULL)
 		retorno = ERROR;
-	//retorno = context_hub_init();
 
 	if (retorno == OK)
 	{
@@ -142,7 +138,6 @@ int uth_create(void * (*start_routine)(void*), void * arg)
 
 int uth_yield(void)
 {
-	showList(READY);
 	insertList(&READY,EXEC);
 	EXEC->state = st_READY;
 	getcontext(EXEC->context);
@@ -155,14 +150,13 @@ int uth_yield(void)
 int uth_wait(int thr)
 {
 	TCB* esperado = getItemById(READY, thr);
-	
 	if (esperado == NULL)
 		esperado = getItemById(BLOCKED, thr);
 	if (esperado == NULL)
 		return ERROR;
 	if (esperado->waiting_for_me == NULL)
 	{
-		esperado->waiting_for_me = EXEC->tid;
+		esperado->waiting_for_me = EXEC;
 		EXEC->state = st_BLOCKED;
 		insertList(&BLOCKED,EXEC);
 		change_exec();

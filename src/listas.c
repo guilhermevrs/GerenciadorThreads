@@ -16,21 +16,17 @@ int showList(ItemList *threadList)
     //printf("ptaux: %d\n", ptaux);
     
     if (ptaux == NULL)
-    {
-        printf("\n\nLista vazia\n\n"); 
+    { 
         return length;
     }
     else
     {
-        length++;
-        printf("\nshow tid: %d\n", ptaux->thTCB->tid); 
+        length++; 
         while (ptaux->proximo != NULL)      	//procura o fim da lista
         {
              ptaux = ptaux->proximo;
              length++;
-             printf("show tid: %d\n", ptaux->thTCB->tid); 
         }
-        printf("\n\n"); 
     }
     return length;
 }

@@ -1,9 +1,5 @@
 #include "../include/uthread.h"
 
-/*
-	Yields aninhados
-*/
-
 void func1()
 {
 	uth_yield();
