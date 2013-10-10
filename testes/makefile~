@@ -1,0 +1,8 @@
+all: teste1
+	echo "foi"
+
+teste1:
+	gcc -o teste1 teste1.c -L../lib/  -luthread
+
+clean:
+	rm -rf *.exe

@@ -1,14 +1,14 @@
-all: libuthread.a
-	gcc -o test test.c -L../GerenciadorThread/  -luthread -Wall
+all: tid.o listas.o uthread.o
+	ar crs lib/libuthread.a bin/uthread.o bin/listas.o bin/tid.o
 
-libuthread.a: tid.o uthread.o
-	ar crs libuthread.a tid.o uthread.o
+tid.o: src/tid.c
+	gcc -o bin/tid.o -c src/tid.c
 
-tid.o: tid.c
-	gcc -c tid.c -Wall
+uthread.o: src/uthread.c
+	gcc -o bin/uthread.o -c src/uthread.c
 
-uthread.o: uthread.c
-	gcc -c uthread.c -Wall
+listas.o: src/listas.c
+	gcc -o bin/listas.o -c src/listas.c
 
 clean:
-	rm -rf *.a test
+	rm  lib/*.a bin/*.o
